@@ -17,7 +17,7 @@ class NextThroughNotesTest {
 
     @Rule
     @JvmField
-    val noteListActivity = ActivityScenarioRule(NoteListActivity::class.java)
+    val noteListActivity = ActivityScenarioRule(ListItemsActivity::class.java)
 
     @Test
     fun nextThroughNotes() {

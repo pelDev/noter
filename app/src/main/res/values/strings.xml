@@ -26,4 +26,8 @@
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="fab_add_note_content_description">Add Note</string>
+    <string name="open_nav_content_description">Open Navigation Drawer</string>
+    <string name="close_nav_content_description">Close Navigation Drawer</string>
+    <string name="menu_notes">Notes</string>
+    <string name="menu_courses">Courses</string>
 </resources>
