@@ -7,16 +7,17 @@ import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_list_items.*
 import kotlinx.android.synthetic.main.app_bar_list_items.*
 import kotlinx.android.synthetic.main.content_list_items.*
 
 class ListItemsActivity : AppCompatActivity(),
-    NavigationView.OnNavigationItemSelectedListener {
+    NavigationView.OnNavigationItemSelectedListener,
+    NoteRecyclerAdapter.OnSelectedListener{
 
     private val noteLayoutManager by lazy {
         LinearLayoutManager(this)
@@ -27,11 +28,25 @@ class ListItemsActivity : AppCompatActivity(),
     }
 
     private val noteRecyclerAdapter by lazy {
-        NoteRecyclerAdapter(this, DataManager.notes)
+        val adapter = NoteRecyclerAdapter(this, DataManager.notes)
+        adapter.setOnSelectedListener(this)
+        adapter
+    }
+
+    private val recentlyViewedNotesAdapter by lazy {
+        val adapter = NoteRecyclerAdapter(this, viewModel.recentlyViewedNotes)
+        adapter.setOnSelectedListener(this)
+        adapter
     }
 
     private val courseRecyclerAdapter by lazy {
         CourseRecyclerAdapter(this, DataManager.courses.values.toList())
+    }
+
+
+
+    private val viewModel by lazy {
+        ViewModelProvider(this)[ListItemViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +69,8 @@ class ListItemsActivity : AppCompatActivity(),
             startActivity(activityIntent)
         }
 
-        displayNotes()
+        handleDisplaySelection(viewModel.navDrawerDisplaySelection)
+
     }
 
     private fun displayNotes() {
@@ -64,11 +80,18 @@ class ListItemsActivity : AppCompatActivity(),
         nav_view.menu.findItem(R.id.nav_notes).isChecked = true
     }
 
-    fun displayCourse() {
+    private fun displayCourse() {
         list_items.layoutManager = courseLayoutManager
         list_items.adapter = courseRecyclerAdapter
 
         nav_view.menu.findItem(R.id.nav_courses).isChecked = true
+    }
+
+    private fun displayRecentlyViewedNotes() {
+        list_items.layoutManager = noteLayoutManager
+        list_items.adapter  = recentlyViewedNotesAdapter
+
+        nav_view.menu.findItem(R.id.nav_recent_notes).isChecked = true
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -89,21 +112,29 @@ class ListItemsActivity : AppCompatActivity(),
         list_items.adapter?.notifyDataSetChanged()
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-
-        when (item.itemId) {
-
+    private fun handleDisplaySelection(itemId: Int) {
+        when (itemId) {
             R.id.nav_notes -> {
                 displayNotes()
             }
-
             R.id.nav_courses -> {
                 displayCourse()
             }
-
+            R.id.nav_recent_notes -> {
+                displayRecentlyViewedNotes()
+            }
         }
+    }
 
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        handleDisplaySelection(item.itemId)
+        viewModel.navDrawerDisplaySelection = item.itemId
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
+
+    override fun onNoteSelected(note: NoteInfo) {
+        viewModel.addToRecentlyViewedNotes(note)
+    }
+
 }
